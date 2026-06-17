@@ -6,7 +6,7 @@ Welcome to our digital family reunion hub! Here you will find the family history
 ## 🎮 Reunion Games
 To play any of the games below, click on the game link to open and play!
 
-* **[Who Am I? Game](game1_self_who_am_i%20(3).html)**
+* **[Who Am I? Game](game1_self_who_am_i%20.html)**
 * **[True or False](game2_self_true_or_false.html)**
 * **[Team Trivia](game3_self_trivia%20(2).html)**
 * **[Find Someone Who](game4_self_find_someone_who.html)**
