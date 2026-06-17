@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>True or False — Bingham Family Reunion</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:  #1C2B3A;
+    --gold:  #C9A84C;
+    --cream: #F5F0E8;
+    --true:  #2C7A4B;
+    --true-light: #D9F0E3;
+    --false: #8A3A2C;
+    --false-light: #F5DDD9;
+    --dim:   rgba(245,240,232,0.55);
+  }
+
+  html, body { height: 100%; background: var(--navy); font-family: 'Source Sans 3', sans-serif; color: var(--cream); overflow: hidden; user-select: none; }
+
+  .screen { display: none; height: 100vh; width: 100vw; }
+  .screen.active { display: flex; }
+
+  /* TITLE */
+  #title-screen {
+    flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #243B55 0%, #1C2B3A 70%);
+    gap: 0; text-align: center; padding: 4vh 6vw;
+  }
+  .eyebrow { font-size: clamp(0.75rem, 1.5vw, 0.95rem); font-weight: 300; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .big-title { font-family: 'Playfair Display', serif; font-size: clamp(3.5rem, 9vw, 7rem); font-weight: 700; line-height: 1; color: var(--cream); margin-bottom: 0.4rem; }
+  .true-false-title { font-size: clamp(3.5rem, 9vw, 7rem); }
+  .true-word { color: var(--true-light); }
+  .false-word { color: var(--false-light); }
+  .or-word { color: var(--dim); font-style: italic; }
+  .title-sub { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(1rem, 2vw, 1.5rem); color: var(--dim); margin: 1rem 0 2.5rem; }
+  .divider { color: var(--gold); font-size: 1.2rem; letter-spacing: 0.5em; margin: 1.5rem 0; }
+  .instructions { max-width: 660px; font-size: clamp(0.9rem, 1.7vw, 1.15rem); font-weight: 300; color: var(--dim); line-height: 1.7; margin-bottom: 2.5rem; }
+  .instructions strong { color: var(--cream); font-weight: 600; }
+  .btn { background: var(--gold); color: var(--navy); border: none; padding: 0.9rem 3rem; font-family: 'Source Sans 3', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: background 0.2s; }
+  .btn:hover { background: #E0BB6A; }
+  .btn-outline { background: transparent; border: 1px solid rgba(201,168,76,0.5); color: var(--gold); }
+  .btn-outline:hover { background: var(--gold); color: var(--navy); }
+
+  /* QUESTION SCREEN */
+  #question-screen {
+    flex-direction: column; align-items: center; justify-content: space-between;
+    padding: 2.5vh 5vw;
+    background: radial-gradient(ellipse at 50% 0%, #243B55 0%, #1C2B3A 65%);
+  }
+  .q-header { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .q-progress { display: flex; align-items: baseline; gap: 0.5rem; }
+  .q-num { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3rem); color: var(--cream); }
+  .q-of { font-size: 1rem; font-weight: 300; color: var(--dim); }
+  .pips { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .pip { width: clamp(10px, 1.8vw, 16px); height: clamp(10px, 1.8vw, 16px); border-radius: 50%; background: rgba(255,255,255,0.12); transition: background 0.3s; }
+  .pip.done-true  { background: var(--true); }
+  .pip.done-false { background: var(--false); }
+  .pip.current    { background: var(--gold); }
+
+  .q-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 1000px; gap: 2vh; }
+
+  .q-category { font-size: clamp(0.72rem, 1.3vw, 0.88rem); font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); }
+
+  .q-statement {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3.8vw, 3rem);
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.3;
+    color: var(--cream);
+    max-width: 900px;
+  }
+
+  .tf-choices { display: flex; gap: 3vw; width: 100%; max-width: 700px; justify-content: center; }
+  .tf-card {
+    flex: 1; max-width: 280px;
+    padding: clamp(1rem, 2.5vh, 1.8rem) 2rem;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    opacity: 0.25;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 80px;
+    user-select: none;
+  }
+  .tf-card.true-card  { background: rgba(44,122,75,0.15);  border-color: rgba(44,122,75,0.4);  color: var(--true-light); }
+  .tf-card.false-card { background: rgba(138,58,44,0.15); border-color: rgba(138,58,44,0.4); color: var(--false-light); }
+  .tf-card.active { opacity: 1; transform: scale(1.04); }
+
+  .q-hint { font-size: clamp(0.75rem, 1.3vw, 0.88rem); font-weight: 300; color: var(--dim); letter-spacing: 0.08em; font-style: italic; }
+
+  .q-footer { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .ctrl-hint { font-size: clamp(0.7rem, 1.2vw, 0.85rem); font-weight: 300; color: var(--dim); }
+  .ctrl-btn { background: transparent; border: 1px solid rgba(201,168,76,0.5); color: var(--gold); padding: 0.75rem 1.8rem; font-family: 'Source Sans 3', sans-serif; font-size: clamp(0.9rem, 2vw, 1rem); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s; min-height: 44px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .ctrl-btn:hover, .ctrl-btn.primary { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+
+  /* ANSWER SCREEN */
+  #answer-screen {
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 4vh 6vw; gap: 2.5vh;
+  }
+  .answer-verdict {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(5rem, 15vw, 11rem);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .answer-verdict.true  { color: var(--true-light); background: radial-gradient(ellipse at center, rgba(44,122,75,0.25) 0%, transparent 70%); width: 100%; text-align: center; padding: 2vh; }
+  .answer-verdict.false { color: var(--false-light); background: radial-gradient(ellipse at center, rgba(138,58,44,0.25) 0%, transparent 70%); width: 100%; text-align: center; padding: 2vh; }
+  .answer-statement { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(1rem, 2.2vw, 1.6rem); color: var(--dim); text-align: center; max-width: 800px; }
+  .answer-explanation { max-width: 800px; font-size: clamp(0.95rem, 1.9vw, 1.25rem); font-weight: 300; line-height: 1.6; text-align: center; color: rgba(245,240,232,0.82); background: rgba(255,255,255,0.05); border: 1px solid rgba(201,168,76,0.2); border-radius: 4px; padding: 1.2rem 2rem; }
+  .answer-explanation strong { color: var(--gold); font-weight: 600; }
+  .answer-footer { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 860px; }
+
+  /* END */
+  #end-screen { flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; padding: 4vh; text-align: center; background: radial-gradient(ellipse at 50% 30%, #243B55 0%, #1C2B3A 70%); }
+
+  .tf-card.selected-true  { opacity: 1; transform: scale(1.06); box-shadow: 0 0 0 4px rgba(44,122,75,0.6); }
+  .tf-card.selected-false { opacity: 1; transform: scale(1.06); box-shadow: 0 0 0 4px rgba(138,58,44,0.6); }
+
+  /* ── MOBILE TOUCH FIXES ── */
+  @media (max-width: 768px) {
+    .tf-choices { gap: 4vw; width: 100%; max-width: 100%; }
+    .tf-card { 
+      max-width: 46%; 
+      min-height: 120px; 
+      font-size: clamp(2.2rem, 10vw, 3.5rem);
+      border-radius: 10px;
+      border-width: 3px;
+    }
+    .tf-card.active, .tf-card.selected-true, .tf-card.selected-false { opacity: 1; }
+    .ctrl-btn { 
+      padding: 1rem 1.5rem; 
+      font-size: 1rem; 
+      min-height: 50px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .q-footer { flex-direction: column; gap: 0.8rem; }
+    .q-footer > div { display: flex; gap: 0.6rem; }
+    .q-footer .ctrl-btn { flex: 1; }
+    .q-statement { font-size: clamp(1.2rem, 4.5vw, 3rem); padding: 0 0.5rem; }
+    #question-screen { padding: 2vh 3vw; }
+    .q-hint { display: none; }
+    .pips { max-width: 70vw; }
+    .ctrl-hint { font-size: 0.7rem; text-align: center; }
+  }
+
+
+  /* ── PROJECTOR ENHANCEMENTS ── */
+  .q-statement { font-size: clamp(2rem, 4.5vw, 3.5rem) !important; }
+  .answer-verdict { font-size: clamp(6rem, 18vw, 14rem) !important; }
+  .answer-statement { font-size: clamp(1.1rem, 2.2vw, 1.8rem) !important; }
+  .answer-explanation { font-size: clamp(1rem, 1.9vw, 1.4rem) !important; max-width: 900px !important; }
+  .ctrl-hint { display: block !important; opacity: 1 !important; }
+
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .tf-choices { gap: 4vw; }
+    .tf-card { max-width: 46%; min-height: 120px; font-size: clamp(2.2rem,10vw,3.5rem); border-width: 3px; }
+    .q-footer { flex-direction: column; gap: 0.6rem; }
+    .q-footer > div { display: flex; gap: 0.6rem; }
+    .ctrl-btn { flex: 1; padding: 1rem; min-height: 50px; font-size: 1rem; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .q-statement { font-size: clamp(1.2rem,4.5vw,3rem); }
+    #question-screen { padding: 2vh 3vw; }
+    .q-hint { display: none; }
+  }
+  .tf-card { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; min-height: 80px; }
+  .tf-card.selected-true  { opacity: 1; transform: scale(1.06); box-shadow: 0 0 0 4px rgba(44,122,75,0.6); }
+  .tf-card.selected-false { opacity: 1; transform: scale(1.06); box-shadow: 0 0 0 4px rgba(138,58,44,0.6); }
+  .ctrl-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; min-height: 44px; }
+  .btn-start { touch-action: manipulation; -webkit-tap-highlight-color: transparent; min-height: 50px; }
+
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div class="screen active" id="title-screen">
+  <p class="eyebrow">Bingham Family Reunion · 2026</p>
+  <div class="true-false-title">
+    <span class="true-word" style="font-family:'Playfair Display',serif;font-size:clamp(3rem,8vw,6rem);font-weight:700;">True</span>
+    <span class="or-word" style="font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,4rem);font-weight:400;"> or </span>
+    <span class="false-word" style="font-family:'Playfair Display',serif;font-size:clamp(3rem,8vw,6rem);font-weight:700;">False</span>
+  </div>
+  <p class="title-sub">Pioneer Ancestor Facts — Solo Edition</p>
+  <div class="divider">— ✦ —</div>
+  <p class="instructions">
+    Each statement is about one of your pioneer ancestors.<br>
+    <strong>Tap TRUE or FALSE</strong> — the answer reveals automatically.<br><br>
+    Keep track of how many you get right!<br><br>
+    <strong>22 questions</strong> · See how well you know the ancestors
+  </p>
+  <button class="btn" onclick="startGame()">Begin Game</button>
+</div>
+
+<!-- QUESTION -->
+<div class="screen" id="question-screen">
+  <div class="q-header">
+    <div class="q-progress">
+      <span class="q-num" id="q-num">1</span>
+      <span class="q-of">/ 22</span>
+    </div>
+    <div class="pips" id="pips"></div>
+    <div style="width:4rem;text-align:right;">
+      <span style="font-size:0.8rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;">Score</span>
+    </div>
+  </div>
+
+  <div class="q-body">
+    <p class="q-category" id="q-category">Family Name</p>
+    <p class="q-statement" id="q-statement">Statement appears here</p>
+    <div class="tf-choices">
+      <div class="tf-card true-card" id="true-card" onclick="selectAnswer(true)" role="button" tabindex="0">TRUE</div>
+      <div class="tf-card false-card" id="false-card" onclick="selectAnswer(false)" role="button" tabindex="0">FALSE</div>
+    </div>
+    <p class="q-hint">Hold up your card — everyone answers at the same time!</p>
+  </div>
+
+  <div class="q-footer">
+    <span class="ctrl-hint">Tap TRUE or FALSE above</span>
+    <button class="ctrl-btn primary" onclick="showAnswer()">Reveal Answer →</button>
+  </div>
+</div>
+
+<!-- ANSWER -->
+<div class="screen" id="answer-screen">
+  <div class="answer-verdict" id="answer-verdict">TRUE</div>
+  <p class="answer-statement" id="answer-statement"></p>
+  <div class="answer-explanation" id="answer-explanation"></div>
+  <div class="answer-footer" style="width:100%;max-width:860px;">
+    <span class="ctrl-hint">SPACE or → for next question</span>
+    <button class="ctrl-btn primary" onclick="nextQuestion()">Next Question →</button>
+  </div>
+</div>
+
+<!-- END -->
+<div class="screen" id="end-screen">
+  <div class="divider">— ✦ —</div>
+  <h2 style="font-family:'Playfair Display',serif;font-size:clamp(3rem,8vw,6rem);font-weight:700;">That's All 22!</h2>
+  <p style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(1rem,2.5vw,1.8rem);color:var(--dim);"><p id="g2-score" style="font-family:'Playfair Display',serif;font-size:clamp(2rem,7vw,4rem);font-weight:700;color:var(--gold);margin:0;"></p>
+  <p id="g2-rank" style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(1rem,2.5vw,1.8rem);color:var(--dim);margin:0;"></p>
+  <div class="divider">— ✦ —</div>
+  <button class="btn" onclick="location.reload()">Play Again</button>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    category: "Jane Hastings",
+    statement: "Jane Hastings walked eight miles through the mud to be baptized on Easter Sunday, 1849.",
+    answer: true,
+    explanation: "TRUE. Her published obituary in Ogden in December 1900 preserves this detail exactly: <strong>'She was baptized at Easter, 1849, walking eight miles through the mud.'</strong> Her husband John didn't join the Church until four and a half years later."
+  },
+  {
+    category: "Lewis Dunbar Wilson",
+    statement: "Lewis Dunbar Wilson received a sword from the Prophet Joseph Smith as a personal gift for his service as a bodyguard.",
+    answer: true,
+    explanation: "TRUE. Lewis served as one of Joseph Smith's personal bodyguards and the Prophet gave him a sword in recognition of his service. <strong>His son Lewis Dunbar Wilson Jr. kept that sword his entire life.</strong>"
+  },
+  {
+    category: "Edward Farley",
+    statement: "The Farley family set out for Utah with 17 wagons and 300 head of cattle.",
+    answer: true,
+    explanation: "TRUE. Granddaughter Madeleine Harrop recorded that the Farley party assembled <strong>seventeen wagons of provisions and three hundred head of cattle</strong>. They were among the best-equipped families making the crossing that season."
+  },
+  {
+    category: "Anna Barbara Briener",
+    statement: "Anna Barbara Briener waited 11 years after her baptism before emigrating to Utah.",
+    answer: true,
+    explanation: "TRUE. She was baptized in Switzerland on October 7, 1873, but didn't emigrate until May 17, 1884. During those eleven years she endured the breakdown of her marriage and a civil divorce. <strong>She finally crossed the ocean at age 49.</strong>"
+  },
+  {
+    category: "Eleanor Wiggins",
+    statement: "Eleanor Moore Wiggins was the last person to leave the wagon company when they crossed the Mississippi River — she refused to go until everyone else was safe.",
+    answer: false,
+    explanation: "FALSE — but her actual story is equally remarkable. Eleanor crossed the frozen Mississippi in early 1846 <strong>with a baby less than a year old</strong> and six other children. Every one of her children had been born on the Illinois prairie they were leaving behind forever."
+  },
+  {
+    category: "Jens Nielsen",
+    statement: "Ane Margrethe Pedersdatter's first husband was killed in a naval battle just 43 days after their wedding.",
+    answer: true,
+    explanation: "TRUE. Ane married Niels Didriksen on February 21, 1849. On April 5, 1849 — just 43 days later — Niels was killed when his warship, the frigate *Gefion*, was set ablaze at the Battle of Eckernförde. <strong>His name is listed in the Danish register of the fallen.</strong>"
+  },
+  {
+    category: "Julius Stender",
+    statement: "Julius Stender crossed the Atlantic on Christmas Eve 1885 aboard a steamship that sailed from Hamburg to New York via Glasgow.",
+    answer: true,
+    explanation: "TRUE. Julius boarded the steamship <em>Cumberland</em> in Hamburg on December 24, 1885. The ship sailed first to Glasgow, then across the Atlantic, arriving in New York on January 17, 1886. He had been a Lutheran miller in Germany — <strong>he had no intention of becoming a Utah pioneer when he boarded that ship.</strong>"
+  },
+  {
+    category: "Robert & Mary Ann Aldous",
+    statement: "The ship that brought the Aldous family to America lost all three of its masts in a hurricane in the Gulf of Mexico.",
+    answer: false,
+    explanation: "FALSE — close, but not all three. On November 4, 1850, a hurricane sheared off the <strong>main and mizen masts completely</strong> and split the foremast — but the foremast wasn't fully lost. The crippled ship limped into New Orleans weeks later."
+  },
+  {
+    category: "Hans Andersen",
+    statement: "Hans Andersen paid for the ocean passage of six of his hired workers who had converted but had no money to emigrate.",
+    answer: true,
+    explanation: "TRUE. When Hans and Maren Andersen sold their Danish farm, they realized approximately $15,000 — and Hans immediately used a significant portion to pay passage for <strong>six hired workers</strong> who had accepted the faith. Fifteen people left Denmark under his financial sponsorship."
+  },
+  {
+    category: "Erastus Bingham",
+    statement: "All twelve members of the original Quorum of the Twelve Apostles once slept at Erastus Bingham's home in Vermont and held a council meeting there.",
+    answer: true,
+    explanation: "TRUE. In the fall of 1835, just two years after the Binghams were baptized, the newly called Quorum of the Twelve traveled through New England. All twelve stayed one night at the Bingham home and held a council meeting — <strong>the only Apostolic council ever held at a private member's home in Vermont.</strong>"
+  },
+  {
+    category: "Mary Ann Moore (Farley)",
+    statement: "Mary Ann Moore Farley was known to her fellow travelers as a woman with 'too much say-so about everything.'",
+    answer: true,
+    explanation: "TRUE — and it was a compliment. Angelina Calkins Farley, who kept a diary of the crossing, recorded this observation about her mother-in-law. Mary Ann had strong opinions about home industry, cooking, and pioneer life. <strong>The frontier needed exactly that kind of woman.</strong>"
+  },
+  {
+    category: "Nancy Ann Waggoner",
+    statement: "Nancy Ann Waggoner crossed the plains and saw the Salt Lake Valley before she died.",
+    answer: false,
+    explanation: "FALSE. Nancy Ann died just ten hours after giving birth to her last son Samuel, on July 19, 1851 — in Iowa, on the banks of Michito Creek. <strong>She survived the Missouri mobs, Nauvoo, and years of poverty, but never made it to Utah.</strong> She is buried in Iowa soil."
+  },
+  {
+    category: "George Stratford",
+    statement: "George Stratford was baptized by Charles W. Penrose — the same man who later became First Counselor in the First Presidency of the Church.",
+    answer: true,
+    explanation: "TRUE. Elder Charles W. Penrose was a penniless 19-year-old who walked to Maldon on bleeding feet. He baptized the entire Stratford family. He later became editor of the Deseret News, an Apostle in 1904, and <strong>First Counselor in the First Presidency</strong> under two Church presidents."
+  },
+  {
+    category: "Anna Barbara Briener",
+    statement: "Anna Barbara Briener's husband eventually joined the Church and emigrated to Utah to be with her.",
+    answer: false,
+    explanation: "FALSE. Johann Heinrich Keller <strong>never joined the Church during his lifetime</strong>. He remarried another woman in Zürich in 1880. His baptism finally came in 2018 — performed by proxy by a descendant, nearly 145 years after Anna Barbara's own conversion."
+  },
+  {
+    category: "Ebenezer Wiggins",
+    statement: "Ebenezer Wiggins sold his Illinois farm directly to Joseph Smith, the Prophet.",
+    answer: false,
+    explanation: "FALSE — almost! He sold his farm to <strong>Emma Smith</strong>, Joseph's wife. Joseph was under bankruptcy protection at the time and legally could not hold property in his own name, so Emma served as the titleholder. The deed is in the Joseph Smith Papers."
+  },
+  {
+    category: "Hans Andersen",
+    statement: "On the voyage across the Atlantic, Hans Andersen's family passed eight icebergs and five whales swam alongside their ship.",
+    answer: true,
+    explanation: "TRUE. The family history records this clearly: on May 21, 1863, the ship *John J. Boyd* navigated past <strong>eight massive icebergs</strong>, and <strong>five whales</strong> swam alongside the vessel, throwing plumes of water into the air. For children raised on a Danish island, nothing had prepared them for this."
+  },
+  {
+    category: "Robert Aldous",
+    statement: "Robert Aldous built the first cabin in Huntsville, Utah — a structure that survived for over a century.",
+    answer: true,
+    explanation: "TRUE. In 1861, Robert Aldous built his family's hewn-log cabin at what is now 200 South and 7400 East in Huntsville. <strong>It stood for well over a century</strong> and was documented as 'the first cabin built in Huntsville' in both local historical profiles and the Utah History Encyclopedia."
+  },
+  {
+    category: "Julius Stender",
+    statement: "Julius Stender founded Central Milling in Logan, Utah — the oldest continuously operating business in the state.",
+    answer: false,
+    explanation: "FALSE — he was its most defining operator, not its founder. Central Milling was <strong>founded in 1867</strong>, nearly twenty years before Julius arrived in Logan. He became so deeply associated with it in the late 1880s and 1890s — converting it to roller-milling technology — that a family memory recorded in FamilySearch calls it the 'Julius Stender Flour Mill.'"
+  },
+  {
+    category: "Erastus Bingham",
+    statement: "Erastus Bingham served in the Mormon Battalion during the Mexican-American War.",
+    answer: false,
+    explanation: "FALSE. Erastus Sr. did <em>not</em> serve in the Battalion — but his two sons <strong>Erastus Jr. and Thomas</strong> did, along with his son-in-law Elijah Norman Freeman, who died at age 24 and was buried on the banks of the Rio Grande. Erastus Sr. stayed behind to care for their families."
+  },
+  {
+    category: "Marianna Crabb & Edwin Stratford",
+    statement: "Edwin Stratford and Marianna Crabb were married before they were baptized on the same day.",
+    answer: false,
+    explanation: "FALSE — the baptism came first. They were baptized together on <strong>May 9, 1851</strong> — two strangers who happened to arrive at the same river the same Friday afternoon. They didn't marry until <strong>Christmas Day, 1855</strong>, four and a half years later."
+  },
+  {
+    category: "Lewis Dunbar Wilson Jr.",
+    statement: "Lewis Dunbar Wilson Jr. crossed the plains at age twelve, walking beside the wagons and handling the oxen over the mountain passes.",
+    answer: true,
+    explanation: "TRUE. Born in Nauvoo in 1840, young Lewis was 12 years old when the family set out with the Daniel A. Miller / John W. Cooley Company in June 1853. <strong>He walked beside the wagons, handling the livestock, over the mountain passes</strong> — and arrived in Salt Lake Valley on September 9, 1853."
+  },
+  {
+    category: "Eliza Barwell Stratford",
+    statement: "Eliza Barwell Stratford was the first person in her family to be baptized — before her husband and before any of her children.",
+    answer: true,
+    explanation: "TRUE. On April 17, 1851, Eliza stepped forward <strong>alone</strong> and was baptized by Elder Penrose — breaking the ice for her entire household. Her son Edwin followed 22 days later, then two more children, and finally George himself on June 2."
+  }
+];
+
+let currentQ = 0;
+let answered = [];
+
+function startGame() {
+  currentQ = 0;
+  answered = [];
+  buildPips();
+  showQuestion();
+}
+
+function buildPips() {
+  const pips = document.getElementById('pips');
+  pips.innerHTML = '';
+  QUESTIONS.forEach((_, i) => {
+    const pip = document.createElement('div');
+    pip.className = 'pip';
+    pip.id = `pip-${i}`;
+    pips.appendChild(pip);
+  });
+}
+
+function showQuestion() {
+  if (currentQ >= QUESTIONS.length) { showScreen('end-screen'); return; }
+  const q = QUESTIONS[currentQ];
+  document.getElementById('q-num').textContent = currentQ + 1;
+  document.getElementById('q-category').textContent = q.category;
+  document.getElementById('q-statement').textContent = q.statement;
+
+  // Reset cards
+  document.getElementById('true-card').className = 'tf-card true-card';
+  document.getElementById('false-card').className = 'tf-card false-card';
+
+  // Update current pip
+  document.querySelectorAll('.pip').forEach((p, i) => {
+    p.className = 'pip' + (i < currentQ ? (answered[i] ? ' done-true' : ' done-false') : (i === currentQ ? ' current' : ''));
+  });
+
+  showScreen('question-screen');
+}
+
+var selfScore2 = 0;
+var selfAnswered2 = false;
+
+function selectAnswer(choice) {
+  if (selfAnswered2) return;   // prevent double-tap
+  selfAnswered2 = true;
+  const q = QUESTIONS[currentQ];
+  const trueCard  = document.getElementById('true-card');
+  const falseCard = document.getElementById('false-card');
+  trueCard.classList.remove('selected-true','selected-false');
+  falseCard.classList.remove('selected-true','selected-false');
+  if (choice === true)  { trueCard.classList.add('selected-true');  }
+  else                  { falseCard.classList.add('selected-false'); }
+  if (choice === q.answer) selfScore2++;
+  setTimeout(showAnswer, 700);
+}
+
+function showAnswer() {
+  const q = QUESTIONS[currentQ];
+  // Highlight correct card
+  if (q.answer) {
+    document.getElementById('true-card').classList.add('active');
+  } else {
+    document.getElementById('false-card').classList.add('active');
+  }
+
+  // Small delay then show answer screen
+  setTimeout(() => {
+    const verdict = document.getElementById('answer-verdict');
+    verdict.textContent = q.answer ? 'TRUE' : 'FALSE';
+    verdict.className = 'answer-verdict ' + (q.answer ? 'true' : 'false');
+    document.getElementById('answer-statement').textContent = `"${q.statement}"`;
+    document.getElementById('answer-explanation').innerHTML = q.explanation;
+    answered[currentQ] = q.answer;
+    showScreen('answer-screen');
+  }, 600);
+}
+
+function nextQuestion() {
+  selfAnswered2 = false;
+  currentQ++;
+  showQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'end-screen') {
+    var total = QUESTIONS.length;
+    document.getElementById('g2-score').textContent = selfScore2 + ' / ' + total + ' correct';
+    var pct = selfScore2 / total;
+    document.getElementById('g2-rank').textContent =
+      pct >= 1.0  ? 'Perfect! You know every ancestor!' :
+      pct >= 0.82 ? 'Excellent — a true family historian!' :
+      pct >= 0.63 ? 'Well done! You know the ancestors well.' :
+      pct >= 0.45 ? 'Good effort — read the stories to learn more.' :
+                    'Now you know what to read first!';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    if (document.getElementById('question-screen').classList.contains('active')) showAnswer();
+    else if (document.getElementById('answer-screen').classList.contains('active')) nextQuestion();
+  }
+});
+</script>
+</body>
+</html>
