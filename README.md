@@ -4,7 +4,7 @@ Welcome to our digital family reunion hub! Here you will find the family history
 * **[From Many Lands Book](From_Many_Lands_Bingham_Family_Reunion_Book_Final_5.pdf)**: Click this file to view and read our digital family history book directly in your browser.
 
 ## 🎮 Reunion Games
-To play any of the games below, click on the game link, then click the **Download raw file** button (it looks like a small arrow pointing down into a bracket on the top right of the file view). Once it downloads to your computer or phone, just double-click it to open and play!
+To play any of the games below, click on the game link to open and play!
 
 * **[Who Am I? Game](Who%20Am%20I_Bingham%20Family%20Reunion.html)**
 * **[True or False](True%20or%20False_Bingham%20Family%20Reunion.html)**
