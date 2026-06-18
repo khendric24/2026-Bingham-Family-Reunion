@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who Am I? — Bingham Family Reunion</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #1C2B3A;
+    --gold:   #C9A84C;
+    --cream:  #F5F0E8;
+    --slate:  #2E5C8A;
+    --rust:   #8A3A2C;
+    --text:   #F5F0E8;
+    --dim:    rgba(245,240,232,0.55);
+  }
+
+  html, body {
+    height: 100%;
+    height: 100dvh;
+    background: var(--navy);
+    font-family: 'Source Sans 3', sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── SCREENS ── */
+  
+  /* ── DYNAMIC VIEWPORT HEIGHT FIX (iOS Safari) ──
+     100vh on iOS includes the browser chrome, making content taller than the screen.
+     100dvh uses the actual visible viewport. Fallback for older browsers: 100vh.  */
+  .screen {
+    display: none;
+    height: 100vh;           /* fallback */
+    height: 100dvh;          /* modern browsers - excludes browser chrome */
+    min-height: -webkit-fill-available;  /* older iOS Safari */
+    width: 100vw;
+    overflow-y: auto;        /* safety net: if content overflows, allow scroll */
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen.active { display: flex; }
+  html {
+    height: -webkit-fill-available;
+  }
+
+  .screen.active { display: flex; }
+
+  /* ── TITLE SCREEN ── */
+  #title-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #243B55 0%, #1C2B3A 70%);
+    gap: 0;
+  }
+  .title-eyebrow {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 300;
+    font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.2rem;
+  }
+  .title-main {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(4rem, 10vw, 8rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+  }
+  .title-main span { color: var(--gold); }
+  .title-sub {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.2rem, 2.8vw, 2rem);
+    font-style: italic;
+    color: var(--dim);
+    margin-bottom: 3rem;
+  }
+  .divider {
+    color: var(--gold);
+    font-size: 1.4rem;
+    letter-spacing: 0.5em;
+    margin-bottom: 3rem;
+  }
+  .instructions {
+    max-width: 680px;
+    text-align: center;
+    font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+    font-weight: 300;
+    color: var(--dim);
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+  .instructions strong { color: var(--cream); font-weight: 600; }
+  .btn-start {
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    padding: 1rem 3.5rem;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-start:hover { background: #E0BB6A; transform: translateY(-1px); }
+
+  /* ── CLUE SCREEN ── */
+  #clue-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2.5vh 4vw;
+    background: radial-gradient(ellipse at 50% 0%, #243B55 0%, #1C2B3A 60%);
+  }
+
+  .clue-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .round-badge {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+  .round-label {
+    font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .round-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+    color: var(--cream);
+  }
+  .progress-bar {
+    flex: 1;
+    margin: 0 2vw;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.4s ease;
+  }
+  .score-display {
+    text-align: right;
+  }
+  .score-label {
+    font-size: 0.8rem;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    display: block;
+  }
+  .score-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    color: var(--gold);
+  }
+
+  .clue-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1100px;
+    gap: 2.5vh;
+  }
+
+  .clue-tag {
+    font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .clue-number-display {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1rem, 2vw, 1.4rem);
+    color: var(--dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* Clue cards stack */
+  .clues-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2vh;
+  }
+
+  .clue-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-left: 3px solid var(--gold);
+    border-radius: 4px;
+    padding: clamp(0.8rem, 1.5vh, 1.4rem) clamp(1.2rem, 2.5vw, 2rem);
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .clue-card.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .clue-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin-top: 0.5em;
+    flex-shrink: 0;
+  }
+  .clue-text {
+    font-size: clamp(1rem, 2.2vw, 1.5rem);
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--cream);
+  }
+
+  /* ── ANSWER SCREEN ── */
+  #answer-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2vh;
+    padding: 4vh 6vw;
+    background: radial-gradient(ellipse at 50% 40%, #1a3a5c 0%, #1C2B3A 70%);
+  }
+  .answer-eyebrow {
+    font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .answer-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    font-weight: 700;
+    text-align: center;
+    color: var(--cream);
+    line-height: 1.1;
+  }
+  .answer-dates {
+    font-size: clamp(1rem, 2vw, 1.4rem);
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+  }
+  .answer-geo {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+    color: var(--dim);
+    text-align: center;
+    max-width: 700px;
+  }
+  .answer-connection {
+    max-width: 700px;
+    text-align: center;
+    font-size: clamp(0.9rem, 1.7vw, 1.15rem);
+    font-weight: 300;
+    line-height: 1.6;
+    color: rgba(245,240,232,0.75);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 4px;
+    padding: 1rem 1.8rem;
+  }
+
+  /* ── FOOTER CONTROLS ── */
+  .controls {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1vh;
+  }
+  .ctrl-hint {
+    font-size: clamp(0.72rem, 1.3vw, 0.88rem);
+    font-weight: 300;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+  }
+  .ctrl-btn {
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.5);
+    color: var(--gold);
+    padding: clamp(0.8rem, 2.5vw, 1.1rem) clamp(1.2rem, 4vw, 2.5rem);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 44px;
+  }
+  .ctrl-btn:hover { background: var(--gold); color: var(--navy); }
+  .ctrl-btn.primary { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+  .ctrl-btn.primary:hover { background: #E0BB6A; }
+
+  /* ── END SCREEN ── */
+  #end-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 4vh 6vw;
+    background: radial-gradient(ellipse at 50% 30%, #243B55 0%, #1C2B3A 70%);
+    text-align: center;
+  }
+  .end-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 700;
+    color: var(--cream);
+  }
+  .end-title span { color: var(--gold); }
+  .end-sub {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.5vw, 1.8rem);
+    color: var(--dim);
+  }
+
+  /* ── MOBILE TOUCH FIXES ── */
+  @media (max-width: 768px) {
+    .controls { flex-direction: column; gap: 0.8rem; align-items: stretch; }
+    .controls > div { display: flex; gap: 0.6rem; }
+    .ctrl-btn { flex: 1; font-size: 1rem; padding: 1rem; min-height: 50px; }
+    .ctrl-hint { text-align: center; font-size: 0.75rem; }
+    .clue-text { font-size: clamp(1rem, 4vw, 1.5rem); }
+    .q-text-big { font-size: clamp(1.4rem, 5vw, 2.8rem); }
+    .answer-name { font-size: clamp(2rem, 8vw, 6rem); }
+    .clue-body { gap: 1.5vh; padding: 0 1rem; }
+    #clue-screen { padding: 2vh 3vw; }
+    #answer-screen { padding: 3vh 4vw; }
+    .title-main { font-size: clamp(3rem, 12vw, 8rem); }
+    .btn-start { padding: 1rem 2.5rem; font-size: 1rem; min-height: 50px; }
+  }
+
+
+  /* ── SMALL PHONE (iPhone SE, iPhone mini) ── */
+  @media (max-height: 700px), (max-width: 390px) {
+    #clue-screen  { padding: 1.5vh 3vw !important; }
+    #answer-screen { padding: 2vh 4vw !important; gap: 1.5vh !important; }
+
+    /* Header */
+    .clue-header  { margin-bottom: 0 !important; }
+    .round-num    { font-size: clamp(1.2rem, 3vw, 1.8rem) !important; }
+    .round-label  { font-size: 0.65rem !important; }
+    .score-num    { font-size: clamp(1rem, 2.5vw, 1.5rem) !important; }
+    .score-label  { font-size: 0.6rem !important; }
+    .progress-bar { height: 2px !important; }
+
+    /* Clue body */
+    .clue-body    { gap: 1vh !important; }
+    .clue-tag     { font-size: 0.65rem !important; }
+    .clue-number-display { font-size: 0.8rem !important; }
+    .clues-container { gap: 0.6vh !important; }
+
+    /* Clue cards — tighter */
+    .clue-card    { padding: 0.5rem 0.8rem !important; }
+    .clue-text    { font-size: 0.85rem !important; line-height: 1.35 !important; }
+    .clue-dot     { width: 6px !important; height: 6px !important; margin-top: 0.4em !important; }
+
+    /* Controls */
+    .controls     { padding-top: 0.5vh !important; }
+    .ctrl-hint    { display: none !important; }
+    .ctrl-btn     { padding: 0.7rem 1.2rem !important; font-size: 0.85rem !important; min-height: 40px !important; }
+
+    /* Answer screen */
+    .answer-eyebrow   { font-size: 0.65rem !important; }
+    .answer-name      { font-size: clamp(1.8rem, 6vw, 4rem) !important; }
+    .answer-dates     { font-size: 0.9rem !important; }
+    .answer-geo       { font-size: 0.85rem !important; }
+    .answer-connection { font-size: 0.82rem !important; padding: 0.7rem 1rem !important; }
+
+    /* Title screen */
+    .title-main   { font-size: clamp(2.5rem, 9vw, 6rem) !important; }
+    .title-sub    { font-size: 1rem !important; }
+    .instructions { font-size: 0.85rem !important; margin-bottom: 1.5rem !important; }
+    .btn-start    { padding: 0.85rem 2rem !important; }
+    .divider      { margin: 0.8rem 0 !important; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ TITLE SCREEN -->
+<div class="screen active" id="title-screen">
+  <p class="title-eyebrow">Bingham Family Reunion · 2026</p>
+  <h1 class="title-main">Who Am <span>I</span>?</h1>
+  <p class="title-sub">A Pioneer Ancestor Mystery — Solo Edition</p>
+  <div class="divider">— ✦ —</div>
+  <p class="instructions">
+    Listen as clues are revealed one at a time.<br>
+    Read each clue carefully and try to guess the ancestor<br>
+    before tapping for the next clue.<br>
+    The fewer clues you need, the better!<br><br>
+    <strong>17 rounds</strong> · Up to 4 clues each
+  </p>
+  <button class="btn-start" onclick="startGame()">Begin Game</button>
+</div>
+
+<!-- ══════════════════════════════════════════ CLUE SCREEN -->
+<div class="screen" id="clue-screen">
+  <div class="clue-header">
+    <div class="round-badge">
+      <span class="round-label">Round</span>
+      <span class="round-num" id="round-num">1</span>
+      <span class="round-label">of 15</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="score-display">
+      <span class="score-label">Clues used</span>
+      <span class="score-num" id="points-display">1</span>
+    </div>
+  </div>
+
+  <div class="clue-body">
+    <div class="clue-tag">Who Am I?</div>
+    <div class="clue-number-display" id="clue-number-display">Clue 1 of 4</div>
+    <div class="clues-container" id="clues-container"></div>
+  </div>
+
+  <div class="controls">
+    <span class="ctrl-hint">Tap Next Clue when ready, or Reveal the Answer</span>
+    <div style="display:flex;gap:1rem;">
+      
+      <button class="ctrl-btn primary" id="next-clue-btn" data-action="next" onclick="handleNextBtn()">Next Clue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ ANSWER SCREEN -->
+<div class="screen" id="answer-screen">
+  <p class="answer-eyebrow">The Answer Is…</p>
+  <h2 class="answer-name" id="answer-name"></h2>
+  <p class="answer-dates" id="answer-dates"></p>
+  <p class="answer-geo" id="answer-geo"></p>
+  <div class="answer-connection" id="answer-connection"></div>
+  <div class="controls" style="max-width:900px;width:100%;">
+    <span class="ctrl-hint">How did you do? Tap Next Round to continue</span>
+    <button class="ctrl-btn primary" onclick="nextRound()">Next Round →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ END SCREEN -->
+<div class="screen" id="end-screen">
+  <div class="divider">— ✦ —</div>
+  <h2 class="end-title">Well <span>Done!</span></h2>
+  <p class="end-sub">You've met 15 of your pioneer ancestors.</p>
+  <p class="instructions" style="margin-top:1rem;">
+    How many did you get on the first clue?<br>
+    Share your score with family and see who knows the ancestors best!
+  </p>
+  <div class="divider">— ✦ —</div>
+  <button class="btn-start" onclick="location.reload()">Play Again</button>
+</div>
+
+<script>
+const ROUNDS = [
+  {
+    name: "Anna Barbara Briener",
+    dates: "1835 – 1914",
+    geo: "Lüfingen, Zürich, Switzerland → Logan, Utah",
+    connection: "She was baptized in Switzerland in 1873 while still living with her husband, who never joined the Church. She waited 11 years — enduring a divorce — before finally emigrating to Utah at age 49 with her teenage daughter.",
+    clues: [
+      "I was born in a small Swiss village near Zürich in 1835, the eldest of nine children. My whole world was the Reformed church and the Swiss citizenship rolls.",
+      "I was baptized into the Church in October 1873 while still living under my husband's roof. He never followed me. My faith cost me my marriage.",
+      "I waited eleven years in Switzerland — surviving a civil divorce — before I finally boarded a steamship in Liverpool with my 19-year-old daughter and crossed the Atlantic.",
+      "I came through Liverpool at age 49, started over in Logan, Utah, married a fellow Swiss convert, outlived him, and lived until 1914 — thirty years after crossing the ocean."
+    ]
+  },
+  {
+    name: "Robert Aldous",
+    dates: "1811 – 1896",
+    geo: "Fenstanton, Huntingdonshire, England → Ogden/Huntsville, Utah",
+    connection: "A master carpenter who rented his cottage from the grandson of the most famous landscape architect in English history. He built the first cabin in Huntsville, Utah — a structure that survived for over a century.",
+    clues: [
+      "I was a skilled English carpenter who rented my family cottage from the grandson of the man who designed the gardens of Blenheim Palace.",
+      "My ship was hit by a hurricane in the Gulf of Mexico that sheared off two masts, split the foremast, and swept the boats overboard.",
+      "My family spent three years in St. Louis, Missouri working to earn enough to outfit a wagon — surviving two cholera epidemics in the process.",
+      "I built the very first cabin in Huntsville, Utah in 1861. It stood for well over a century as a monument to pioneer labor."
+    ]
+  },
+  {
+    name: "Lewis Dunbar Wilson",
+    dates: "1805 – 1856",
+    geo: "Vermont → Ohio → Missouri → Nauvoo → Iowa → Ogden",
+    connection: "Bodyguard to Joseph Smith. He received a sword from the Prophet in recognition of his service. His son Lewis Jr. walked across the plains at age 12 and later became the great-grandfather in the family line.",
+    clues: [
+      "I was born in Vermont but moved my family to Ohio, Missouri, Nauvoo — and finally Utah — following the Saints every step of the way.",
+      "I was a member of the original Nauvoo High Council, a calling mentioned by name in Doctrine and Covenants Section 124.",
+      "The Prophet Joseph Smith gave me a sword as a personal gift in recognition of my loyalty — my son kept it his whole life.",
+      "My wife hid Joseph Smith under her bed while I went outside with a gun to hold back the mob that was chasing him."
+    ]
+  },
+  {
+    name: "Eliza Barwell",
+    dates: "1809 – 1893",
+    geo: "Maldon, Essex, England → Ogden, Utah",
+    connection: "The moral center of the Stratford family. She was the first to be baptized, inspiring the rest of her family to follow. After her husband died at the outskirts of the plains, she gathered her daughters and crossed alone.",
+    clues: [
+      "I was born in Maldon, Essex and married a cabinet-maker. Together we buried four of our ten children before finding the truth we had been seeking.",
+      "I was the first in my entire family to be baptized — my act of faith on April 17, 1851 started a chain that brought in my husband and four children over the next ten weeks.",
+      "My husband died on the very threshold of the American plains. My daughter wrote that it was 'a deep trial' — but I refused to turn back.",
+      "I crossed the American plains as a widow with my daughters, became a dressmaker in Utah, and outlived my husband by more than thirty years."
+    ]
+  },
+  {
+    name: "Jens Nielsen",
+    dates: "1825 – 1900",
+    geo: "Liseleje, Denmark → Logan, Utah",
+    connection: "A Danish fisherman from the North Sea coast who married the widow of a sailor killed in a naval battle just 43 days after her wedding. Together they crossed the Atlantic and walked to Utah.",
+    clues: [
+      "I was born on the northern coast of Denmark in a fishing village on the Kattegat, where men learned to read storms and climb rigging without fear.",
+      "My wife was a widow — her first husband was killed in a naval battle only 43 days after their wedding, when his warship was set on fire and surrendered.",
+      "My family crossed the Atlantic in 1860 on the same ship as a young man named William Budge, who then captained our overland wagon company all the way to Utah.",
+      "My children used the patronymic naming system — in Denmark they were 'Jensen,' children of Jens — but in Utah they became Nielsens."
+    ]
+  },
+  {
+    name: "Mary Ann Parkin",
+    dates: "1814 – 1892",
+    geo: "Boston, Lincolnshire, England → Huntsville, Utah",
+    connection: "Wife of Robert Aldous. She was baptized exactly 17 days after her husband — navigating the social dangers of joining a radical new church while living in a cottage owned by the local Anglican rector.",
+    clues: [
+      "I was born in Lincolnshire, England, and lived in a cottage owned by the local rector — the grandson of England's most famous landscape architect.",
+      "My husband was baptized on a freezing December night in 1849. I waited exactly 17 days before I had the courage to follow him into the water.",
+      "On a ship in the Gulf of Mexico, I became gravely ill crossing the Atlantic — and then a hurricane nearly destroyed the vessel entirely.",
+      "My family survived it all: the storm, three years in St. Louis, the plains crossing — and built a new life in the mountains of Utah."
+    ]
+  },
+  {
+    name: "Edwin Stratford",
+    dates: "1833 – 1899",
+    geo: "Maldon, Essex, England → Ogden, Utah",
+    connection: "He was baptized on the same afternoon as a young orphaned woman he had never met — and eventually married her. They were the only two people baptized that day.",
+    clues: [
+      "I was the eldest son of a cabinet-maker in Maldon, Essex, and my mother's courage in being baptized was the example that led me to the water.",
+      "On a Friday afternoon in May 1851, I was baptized — and so was a 19-year-old orphaned dressmaker's apprentice I had never met. We were the only two baptized that day.",
+      "I stood as a witness at my sister Lucetta's wedding to Elder Charles W. Penrose — a man who would one day serve in the First Presidency of the Church.",
+      "I eventually became the Bishop of the Ogden 4th Ward and founded a furniture business called E. Stratford & Sons."
+    ]
+  },
+  {
+    name: "Nancy Ann Waggoner",
+    dates: "1810 – 1851",
+    geo: "Ohio → Missouri → Nauvoo → Iowa",
+    connection: "She bore ten children and survived the militia raids of Missouri, the exodus from Nauvoo, and years of poverty in Iowa — only to die just forty-three days after giving birth to her last child. She never saw Utah.",
+    clues: [
+      "I married my husband in Ohio in 1830 and eventually bore ten children, following the Saints through Missouri, Nauvoo, and Iowa.",
+      "I personally hid a prophet of God under my bed to protect him from an angry mob — with my own hands.",
+      "I was sealed to my husband in the Nauvoo Temple in January 1846, just weeks before the Saints were forced to abandon the city.",
+      "I survived everything — mobs, mud, malnutrition — but died just ten hours after giving birth to my last son in Iowa. I never saw Utah."
+    ]
+  },
+  {
+    name: "Erastus Bingham",
+    dates: "1798 – 1882",
+    geo: "Concord, Vermont → Ogden, Utah",
+    connection: "Your great-great-great-grandfather. He established Bingham's Fort in Ogden — the settlement that bears the family name to this day.",
+    clues: [
+      "I was born in Vermont in 1798 and farmed the thin New England soil my entire early life.",
+      "The entire Quorum of the Twelve Apostles — all twelve men — once spent the night at my house and held a Church council meeting there.",
+      "Three of my family members enlisted in the Mormon Battalion, including my two sons and my son-in-law, who never came home.",
+      "A pioneer fort in Ogden, Utah was named after me because I was the Bishop whose farmland it was built on."
+    ]
+  },
+  {
+    name: "Marianna Crabb",
+    dates: "1831 – 1919",
+    geo: "Danbury, Essex, England → Ogden, Utah",
+    connection: "An orphaned dressmaker's apprentice who walked to a river in Essex and was baptized alongside a young man she had never met. They became the only two people baptized that day — and eventually husband and wife.",
+    clues: [
+      "By the time I was 19, both my parents were gone. I was living as a dressmaker's apprentice in a shoemaker's household in Essex, England.",
+      "On a Friday afternoon in May 1851, I walked to a river in Maldon and was baptized alongside a young man I had never met. We were the only two there.",
+      "Forty-eight hours after my own baptism, my employer and his sister were baptized — I had carried my new faith home with me without even trying.",
+      "I married on Christmas Day, 1855 — the same man who had stood at the same river the same Friday afternoon four and a half years earlier."
+    ]
+  },
+  {
+    name: "Anna Barbara Keller (Annebäbbi)",
+    dates: "1865 – 1906",
+    geo: "Oberembrach, Zürich, Switzerland → Logan, Utah",
+    connection: "The daughter of Anna Barbara Briener, who followed her mother to Logan in 1887 and became the beloved heart of the Stender household. She died at forty, leaving four children and a German miller who outlived her by twenty-three years.",
+    clues: [
+      "I was the daughter of a Swiss woman who had converted, divorced, and crossed an ocean — I was born in Zürich and grew up speaking Swiss-German in a household torn apart by faith.",
+      "Everyone called me by my nickname, a Swiss-German diminutive that followed me from Zürich to Utah and onto the lips of every neighbor who knew me in Logan.",
+      "Before my marriage I sang in the Swiss German Choir in Logan, which met half a block west of the Ninth Ward church — one of the ways I found my people in a valley full of strangers.",
+      "I refused to marry the German miller who courted me until he joined the Church. He did. We were sealed in the Logan Temple on February 19, 1890."
+    ]
+  },
+  {
+    name: "Eleanor Moore",
+    dates: "c. 1810 – 1871",
+    geo: "Hancock County, Illinois → Pottawattamie County, Iowa → Ogden, Utah",
+    connection: "She carried an infant across a frozen river in the middle of winter and waited six years in Iowa before making the plains crossing. She is the mother of Catherine Wiggins, who married Lewis Dunbar Wilson Jr.",
+    clues: [
+      "My husband bought and sold land from Emma Smith, the Prophet's wife, near the city of Nauvoo, Illinois.",
+      "I crossed a frozen Mississippi River in the dead of winter with an infant less than a year old in my arms.",
+      "I waited six years in the mud and poverty of Iowa before our wagon finally joined the last pioneer company of 1852.",
+      "My daughter Catherine grew up in Ogden and later married the son of the Prophet's bodyguard — joining two pioneer families into one."
+    ]
+  },
+  {
+    name: "Hans Andersen",
+    dates: "1819 – 1901",
+    geo: "Bredstrup, Fyn, Denmark → Cache Valley, Utah",
+    connection: "A prosperous Danish farmer who paid the ocean passage not just for his own family but for six hired workers who had also converted and couldn't afford the journey. Fifteen people left Denmark under his sponsorship.",
+    clues: [
+      "I farmed seventy acres on the Danish island of Fyn, with ten cows, six teams of horses, twenty sheep, and a flock of geese — and I was known for my hospitality to missionaries.",
+      "My son was kicked in the head by a horse and the doctor said he would die. He lay unconscious for 48 hours. When he recovered, I knew what I had to believe.",
+      "I didn't just pay for my own family's passage — I paid for six hired workers who had converted and had no money of their own. Fifteen of us left Denmark together.",
+      "On our crossing to America, we passed eight massive icebergs and five whales swam alongside the ship. My wife nursed our five-month-old baby the whole way across."
+    ]
+  },
+  {
+    name: "George Stratford",
+    dates: "1807 – 1861",
+    geo: "Maldon, Essex, England → Florence, Nebraska",
+    connection: "He survived a six-week Atlantic crossing while gravely ill — only to die at Florence, Nebraska, at the very threshold of the American plains, never seeing Utah. His wife refused to turn back and completed the crossing alone.",
+    clues: [
+      "I was a cabinet-maker in Maldon, Essex, England. My family had already buried four of our ten children before a missionary ever knocked on our door.",
+      "A penniless 19-year-old missionary walked bleeding into our town and changed our entire family's destiny — my wife was baptized first, then all of us.",
+      "I survived a six-week Atlantic crossing while very sick. My daughter later wrote that the family feared every day they would have to bury me at sea.",
+      "I died at Florence, Nebraska — the old Winter Quarters — right on the threshold of the American plains. My wife refused to turn back and crossed without me."
+    ]
+  },
+  {
+    name: "Ebenezer Fairchild Wiggins",
+    dates: "1806 – 1858",
+    geo: "Millersburg, Kentucky → Nauvoo, Illinois → Ogden, Utah",
+    connection: "He sold his family farm directly to Emma Smith, wife of the Prophet — and received a wagon and horses as part of the payment, which very likely carried his family to Utah years later.",
+    clues: [
+      "I was a Kentucky-born farmer who settled in Hancock County, Illinois — just a few miles north of what would become Nauvoo.",
+      "I sold my family farm directly to Emma Smith, wife of the Prophet, for $2,700 — and part of the payment was a wagon and span of horses.",
+      "My wife crossed a frozen river in winter with seven children, the youngest less than a year old — every child born on the Illinois prairie.",
+      "We were the last wagon family to leave Kanesville, Iowa — the very last company of 1852 — twenty years after we first built our Illinois home."
+    ]
+  },
+  {
+    name: "Julius Stender",
+    dates: "1857 – 1929",
+    geo: "Curau, Holstein, Germany → Brigham City → Logan, Utah",
+    connection: "A German miller who arrived in Logan in 1886 with nothing but his trade and a half-brother's address. He became a pillar of Cache Valley's milling industry and the husband of Annebäbbi Keller.",
+    clues: [
+      "I was born in Curau, a small village in northern Germany, and followed my father's trade as a miller from the age of fourteen.",
+      "I boarded a steamship in Hamburg on Christmas Eve 1885 and arrived in New York on January 17, 1886 — crossing the Atlantic as a Lutheran miller with no intention of staying.",
+      "I spent my first two months in America in the home of my half-brother, who had left our village in Germany thirty years earlier and had been a committed Latter-day Saint since 1859.",
+      "A Swiss-German woman I met in Logan told me she would not marry me until I joined the Church. I joined in 1889. We married on February 19, 1890 — civil ceremony and Logan Temple sealing on the same day."
+    ]
+  },
+  {
+    name: "Lucinda Gates",
+    dates: "1797 – 1874",
+    geo: "Acworth, New Hampshire → Ogden, Utah",
+    connection: "Wife of Erastus Bingham. She and her daughters were known for singing hymns around the campfire every evening on the plains — keeping up the spirits of the entire wagon company.",
+    clues: [
+      "I was born in New Hampshire in 1797, the daughter of a family whose roots stretched back to the founding of Massachusetts.",
+      "My husband and I were baptized on the same November day in 1833, along with three of our children.",
+      "My family was expelled from Missouri, Illinois, and had to winter with Native American friends near Council Bluffs just to survive.",
+      "My daughters and I sang around the campfire every night on the plains crossing, and journals say our voices kept the whole company going."
+    ]
+  }
+];
+
+let currentRound = 0;
+let currentClueIndex = 0;
+let pointsAvailable = 4;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  currentRound = 0;
+  showRound();
+}
+
+function showRound() {
+  if (currentRound >= ROUNDS.length) {
+    showScreen('end-screen');
+    return;
+  }
+
+  currentClueIndex = 0;
+  pointsAvailable = 4;
+
+  const round = ROUNDS[currentRound];
+  document.getElementById('round-num').textContent = currentRound + 1;
+  document.getElementById('progress-fill').style.width = `${((currentRound) / ROUNDS.length) * 100}%`;
+  document.getElementById('points-display').textContent = '1';
+
+  const container = document.getElementById('clues-container');
+  container.innerHTML = '';
+  round.clues.forEach((clue, i) => {
+    const card = document.createElement('div');
+    card.className = 'clue-card';
+    card.id = `clue-${i}`;
+    card.innerHTML = `<div class="clue-dot"></div><p class="clue-text">${clue}</p>`;
+    container.appendChild(card);
+  });
+
+  showScreen('clue-screen');
+  revealClue(0);
+}
+
+function revealClue(index) {
+  const round = ROUNDS[currentRound];
+  currentClueIndex = index;
+  pointsAvailable = 4 - index;
+  document.getElementById('points-display').textContent = (4 - pointsAvailable + 1);
+  document.getElementById('clue-number-display').textContent = `Clue ${index + 1} of ${round.clues.length}`;
+
+  const card = document.getElementById(`clue-${index}`);
+  if (card) card.classList.add('revealed');
+
+  const nextBtn = document.getElementById('next-clue-btn');
+  if (index >= round.clues.length - 1) {
+    nextBtn.textContent = 'Reveal Answer';
+    nextBtn.setAttribute('data-action', 'reveal');
+  } else {
+    nextBtn.textContent = 'Next Clue →';
+    nextBtn.setAttribute('data-action', 'next');
+  }
+}
+
+function nextClue() {
+  const round = ROUNDS[currentRound];
+  if (currentClueIndex < round.clues.length - 1) {
+    revealClue(currentClueIndex + 1);
+  } else {
+    revealAnswer();
+  }
+}
+
+function handleNextBtn() {
+  const btn = document.getElementById('next-clue-btn');
+  const action = btn.getAttribute('data-action');
+  if (action === 'reveal') {
+    revealAnswer();
+  } else {
+    nextClue();
+  }
+}
+
+function revealAnswer() {
+  const round = ROUNDS[currentRound];
+  document.getElementById('answer-name').textContent = round.name;
+  document.getElementById('answer-dates').textContent = round.dates;
+  document.getElementById('answer-geo').textContent = round.geo;
+  document.getElementById('answer-connection').textContent = round.connection;
+  showScreen('answer-screen');
+}
+
+function nextRound() {
+  currentRound++;
+  showRound();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  const clueScreen = document.getElementById('clue-screen');
+  const answerScreen = document.getElementById('answer-screen');
+
+  if (clueScreen.classList.contains('active')) {
+    if (e.key === ' ' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const round = ROUNDS[currentRound];
+      if (currentClueIndex < round.clues.length - 1) nextClue();
+      else revealAnswer();
+    }
+  } else if (answerScreen.classList.contains('active')) {
+    if (e.key === ' ' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      nextRound();
+    }
+  }
+});
+</script>
+</body>
+</html>
